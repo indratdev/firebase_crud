@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_crud/models/transaction_model.dart';
 import 'package:flutter/material.dart';
 
 class TransactionScreen extends StatefulWidget {
@@ -39,12 +40,18 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 
   _addNewTransaction() {
-    _transaction.add({
-      'name': nameController.text,
-      'description': descController.text,
-      'date': dateController.text,
-      'amount': amountController.text,
-    });
+    // _transaction.add({
+    //   'name': nameController.text,
+    //   'description': descController.text,
+    //   'date': dateController.text,
+    //   'amount': amountController.text,
+    // });
+    _transaction.add(TransactionModel(
+      date: dateController.text,
+      name: nameController.text,
+      description: descController.text,
+      amount: double.parse(amountController.text),
+    ));
     _showSnacBarStatus('Success Add New Data', false);
   }
 
