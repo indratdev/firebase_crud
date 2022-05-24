@@ -16,6 +16,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController descController = TextEditingController();
   TextEditingController dateController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
 
   @override
   void initState() {
@@ -30,7 +31,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
             (value) => {
               nameController.text = value['name'],
               descController.text = value['description'],
-              dateController.text = value['date']
+              dateController.text = value['date'],
+              amountController.text = value['amount'],
             },
           );
     }
@@ -41,6 +43,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       'name': nameController.text,
       'description': descController.text,
       'date': dateController.text,
+      'amount': amountController.text,
     });
     _showSnacBarStatus('Success Add New Data', false);
   }
@@ -50,6 +53,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       'name': nameController.text,
       'description': descController.text,
       'date': dateController.text,
+      'amount': amountController.text,
     });
     _showSnacBarStatus('Success Updated Data', false);
   }
@@ -83,6 +87,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       nameController.text = '';
       descController.text = '';
       dateController.text = '';
+      amountController.text = '';
     });
   }
 
@@ -112,6 +117,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
               decoration: const InputDecoration(labelText: 'Name'),
             ),
             TextField(
+              controller: amountController,
+              decoration: const InputDecoration(labelText: 'Amount'),
+            ),
+            TextField(
               controller: descController,
               decoration: const InputDecoration(labelText: 'Deskripsi'),
             ),
@@ -138,7 +147,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
                       descController.text != null &&
                       descController.text != '' &&
                       dateController.text != null &&
-                      dateController.text != '') {
+                      dateController.text != '' &&
+                      amountController.text != null &&
+                      amountController.text != '') {
                     if (widget.iddocs == '') {
                       _addNewTransaction();
                     } else {
@@ -149,7 +160,9 @@ class _TransactionScreenState extends State<TransactionScreen> {
                         true, Colors.red);
                   }
                 },
-                child: const Text('Save'))
+                child: (widget.iddocs == '')
+                    ? const Text('Save')
+                    : const Text('Update'))
           ],
         ),
       ),
