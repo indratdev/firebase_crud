@@ -48,7 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               TransactionScreen(iddocs: documentSnapshot.id)));
                 },
                 child: Card(
-                  color: (index % 2 == 0) ? Colors.grey : Colors.amber[300],
+                  color:
+                      (index % 2 == 0) ? Colors.blue[100] : Colors.amber[400],
                   child: ListTile(
                     title: Text(documentSnapshot['name']),
                     subtitle: Text(documentSnapshot['description']),

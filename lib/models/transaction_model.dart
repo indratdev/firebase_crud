@@ -1,5 +1,7 @@
 // enum TypeTrasaction { outcome, income }
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class TransactionModel {
   String name, description, date;
 //  String typeTrasaction;
@@ -12,7 +14,7 @@ class TransactionModel {
       this.amount = 0.0,
       required this.date});
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
       'name': name,
       'description': description,
@@ -22,10 +24,23 @@ class TransactionModel {
     };
   }
 
-  TransactionModel.fromMap(Map<String, dynamic> transactionModelMap)
-      : name = transactionModelMap["name"],
-        description = transactionModelMap["description"],
-        amount = transactionModelMap["amount"],
-        date = transactionModelMap["date"];
+  // TransactionModel.fromMap(Map<String, dynamic> transactionModelMap)
+  //     : name = transactionModelMap["name"],
+  //       description = transactionModelMap["description"],
+  //       amount = transactionModelMap["amount"],
+  //       date = transactionModelMap["date"];
   //  typeTrasaction = transactionModelMap["type"];
+  factory TransactionModel.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    {
+      final data = snapshot.data();
+      return TransactionModel(
+          name: data?['name'],
+          description: data?['description'],
+          amount: data?['amount'],
+          date: data?['date']);
+    }
+  }
 }

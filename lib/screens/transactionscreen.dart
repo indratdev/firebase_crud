@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_crud/models/transaction_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TransactionScreen extends StatefulWidget {
   TransactionScreen({Key? key, required this.iddocs}) : super(key: key);
@@ -30,26 +31,36 @@ class _TransactionScreenState extends State<TransactionScreen> {
       final doc = _transaction.doc(widget.iddocs);
       doc.get().then(
             (value) => {
-              nameController.text = value['name'],
-              descController.text = value['description'],
-              dateController.text = value['date'],
-              amountController.text = value['amount'],
+              nameController.text = value['name'].toString(),
+              descController.text = value['description'].toString(),
+              dateController.text = value['date'].toString(),
+              amountController.text = value['amount'].toString(),
             },
           );
     }
   }
 
+  _addNewTransaction_withModel() async {
+    final trx = TransactionModel(
+        date: dateController.text,
+        name: nameController.text.toUpperCase(),
+        description: descController.text.toUpperCase(),
+        amount: double.parse(amountController.text));
+
+    final docRef = _transaction.withConverter(
+      fromFirestore: TransactionModel.fromFirestore,
+      toFirestore: (TransactionModel trx, options) => trx.toFirestore(),
+    );
+    await docRef.add(trx);
+
+    _showSnacBarStatus('Success Add New Data', false);
+  }
+
   _addNewTransaction() {
-    // _transaction.add({
-    //   'name': nameController.text,
-    //   'description': descController.text,
-    //   'date': dateController.text,
-    //   'amount': amountController.text,
-    // });
     _transaction.add(TransactionModel(
       date: dateController.text,
-      name: nameController.text,
-      description: descController.text,
+      name: nameController.text.toUpperCase(),
+      description: descController.text.toUpperCase(),
       amount: double.parse(amountController.text),
     ));
     _showSnacBarStatus('Success Add New Data', false);
@@ -60,7 +71,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
       'name': nameController.text,
       'description': descController.text,
       'date': dateController.text,
-      'amount': amountController.text,
+      'amount': double.parse(amountController.text),
     });
     _showSnacBarStatus('Success Updated Data', false);
   }
@@ -117,60 +128,66 @@ class _TransactionScreenState extends State<TransactionScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: amountController,
-              decoration: const InputDecoration(labelText: 'Amount'),
-            ),
-            TextField(
-              controller: descController,
-              decoration: const InputDecoration(labelText: 'Deskripsi'),
-            ),
-            TextField(
-              controller: dateController,
-              decoration: const InputDecoration(labelText: 'Date Transaction'),
-              onTap: () {
-                showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(9999),
-                ).then((value) {
-                  if (value != null) {
-                    dateController.text = value.toString();
-                  }
-                });
-              },
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  if (nameController.text != null &&
-                      nameController.text != '' &&
-                      descController.text != null &&
-                      descController.text != '' &&
-                      dateController.text != null &&
-                      dateController.text != '' &&
-                      amountController.text != null &&
-                      amountController.text != '') {
-                    if (widget.iddocs == '') {
-                      _addNewTransaction();
-                    } else {
-                      _updateTransaction(widget.iddocs);
+        child: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              TextField(
+                controller: nameController,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Amount'),
+              ),
+              TextField(
+                controller: descController,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(labelText: 'Deskripsi'),
+              ),
+              TextField(
+                controller: dateController,
+                decoration:
+                    const InputDecoration(labelText: 'Date Transaction'),
+                onTap: () {
+                  showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(9999),
+                  ).then((value) {
+                    if (value != null) {
+                      dateController.text = value.toString();
                     }
-                  } else {
-                    _showSnacBarStatus('Make sure all the fields are filled',
-                        true, Colors.red);
-                  }
+                  });
                 },
-                child: (widget.iddocs == '')
-                    ? const Text('Save')
-                    : const Text('Update'))
-          ],
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    if (nameController.text != null &&
+                        nameController.text != '' &&
+                        descController.text != null &&
+                        descController.text != '' &&
+                        dateController.text != null &&
+                        dateController.text != '' &&
+                        amountController.text != null &&
+                        amountController.text != '') {
+                      if (widget.iddocs == '') {
+                        _addNewTransaction_withModel();
+                      } else {
+                        _updateTransaction(widget.iddocs);
+                      }
+                    } else {
+                      _showSnacBarStatus('Make sure all the fields are filled',
+                          true, Colors.red);
+                    }
+                  },
+                  child: (widget.iddocs == '')
+                      ? const Text('Save')
+                      : const Text('Update'))
+            ],
+          ),
         ),
       ),
     );
