@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_crud/models/transaction_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class TransactionScreen extends StatefulWidget {
   TransactionScreen({Key? key, required this.iddocs}) : super(key: key);
@@ -122,7 +121,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                     onPressed: () {
                       _deleteTransaction(widget.iddocs);
                     },
-                    icon: const Icon(Icons.delete))
+                    icon: const Icon(Icons.delete, color: Colors.red))
               ]
             : null,
       ),
@@ -139,6 +138,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
+                // inputFormatters: [ThousandsSeparatorInputFormatter()],
                 decoration: const InputDecoration(labelText: 'Amount'),
               ),
               TextField(
