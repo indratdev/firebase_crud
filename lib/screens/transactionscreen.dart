@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_crud/models/transaction_model.dart';
+import 'package:firebase_crud/models/transactionfirebase.dart';
+import 'package:firebase_crud/screens/widgets/widgethelper.dart';
 import 'package:flutter/material.dart';
 
 class TransactionScreen extends StatefulWidget {
@@ -11,8 +13,8 @@ class TransactionScreen extends StatefulWidget {
 }
 
 class _TransactionScreenState extends State<TransactionScreen> {
-  final CollectionReference _transaction =
-      FirebaseFirestore.instance.collection('transaction');
+  // final CollectionReference _transaction =
+  //     FirebaseFirestore.instance.collection('transaction');
 
   TextEditingController nameController = TextEditingController();
   TextEditingController descController = TextEditingController();
@@ -27,7 +29,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   _checkDefaultValue() {
     if (widget.iddocs != '') {
-      final doc = _transaction.doc(widget.iddocs);
+      final doc = TransactionFirebase().trxCollection.doc(widget.iddocs);
       doc.get().then(
             (value) => {
               nameController.text = value['name'].toString(),
@@ -37,66 +39,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
             },
           );
     }
-  }
-
-  _addNewTransaction_withModel() async {
-    final trx = TransactionModel(
-        date: dateController.text,
-        name: nameController.text.toUpperCase(),
-        description: descController.text.toUpperCase(),
-        amount: double.parse(amountController.text));
-
-    final docRef = _transaction.withConverter(
-      fromFirestore: TransactionModel.fromFirestore,
-      toFirestore: (TransactionModel trx, options) => trx.toFirestore(),
-    );
-    await docRef.add(trx);
-
-    _showSnacBarStatus('Success Add New Data', false);
-  }
-
-  _addNewTransaction() {
-    _transaction.add(TransactionModel(
-      date: dateController.text,
-      name: nameController.text.toUpperCase(),
-      description: descController.text.toUpperCase(),
-      amount: double.parse(amountController.text),
-    ));
-    _showSnacBarStatus('Success Add New Data', false);
-  }
-
-  _updateTransaction(String iddocs) {
-    _transaction.doc(iddocs).update({
-      'name': nameController.text,
-      'description': descController.text,
-      'date': dateController.text,
-      'amount': double.parse(amountController.text),
-    });
-    _showSnacBarStatus('Success Updated Data', false);
-  }
-
-  _deleteTransaction(String iddocs) {
-    if (widget.iddocs != '') {
-      _transaction.doc(iddocs).delete();
-      _showSnacBarStatus('Success deleted', false);
-    }
-  }
-
-  _showSnacBarStatus(String status, bool isHold, [Color color = Colors.green]) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: const Duration(seconds: 2),
-        backgroundColor: color,
-        content: Text(status),
-      ),
-    );
-
-    (isHold)
-        ? null
-        : Future.delayed(const Duration(milliseconds: 2500), () {
-            Navigator.pop(context);
-            _resetTextField();
-          });
   }
 
   _resetTextField() {
@@ -119,7 +61,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
             ? <Widget>[
                 IconButton(
                     onPressed: () {
-                      _deleteTransaction(widget.iddocs);
+                      WidgetHelpers().showDialogOption2(context, widget.iddocs,
+                          () {
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
+                        TransactionFirebase()
+                            .deleteTransaction(widget.iddocs, context);
+                      });
                     },
                     icon: const Icon(Icons.delete, color: Colors.red))
               ]
@@ -174,13 +122,34 @@ class _TransactionScreenState extends State<TransactionScreen> {
                         amountController.text != null &&
                         amountController.text != '') {
                       if (widget.iddocs == '') {
-                        _addNewTransaction_withModel();
+                        // _addNewTransaction_withModel();
+                        TransactionFirebase().addNewTransaction_withModel(
+                            context,
+                            TransactionModel(
+                                date: dateController.text,
+                                name: nameController.text,
+                                amount: double.parse(amountController.text),
+                                description: descController.text));
+
+                        _resetTextField();
                       } else {
-                        _updateTransaction(widget.iddocs);
+                        // _updateTransaction(widget.iddocs);
+                        TransactionFirebase().updateTransaction(
+                            widget.iddocs,
+                            TransactionModel(
+                                date: dateController.text,
+                                name: nameController.text,
+                                amount: double.parse(amountController.text),
+                                description: descController.text),
+                            context);
+                        _resetTextField();
                       }
                     } else {
-                      _showSnacBarStatus('Make sure all the fields are filled',
-                          true, Colors.red);
+                      WidgetHelpers().showSnacBarStatus(
+                          context,
+                          'Make sure all the fields are filled',
+                          true,
+                          Colors.red);
                     }
                   },
                   child: (widget.iddocs == '')
